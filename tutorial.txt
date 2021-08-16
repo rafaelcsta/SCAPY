@@ -1,0 +1,104 @@
+#Montando pacote IP
+>>>ls(IP)
+#setando PROTOCOLO IP (src eh setado padrao e vai ser seu ip ",src="")
+#O campo antes do ip eh o nome que vc da a variavel, e pode ser qqer coisa
+#O campo apos o = recebe padrao dos protocolos etc..
+>>>pIP = IP(dst="192.168.0.254")
+#Variavel pIP criada
+# voce pode ver como esta ficando de 3 formas
+>>>pIP #mostra a estrutura objetiva
+>>>pIP.show() #mostra com um todo
+ou ainda
+>>>pIP.summary() #mostra resumo
+#Voce pode alterar todos os campos exibidos nos .show() 
+>>>pTCP.sport=43778
+>>>pTCP #ver como ta
+# /etc/protocols mostra todas as portas e seus nomes
+# /etc/services mostra todos os servicos e pids
+# Voce pode encapsular o TCP dentro do IP
+>>>pacote = pIP/pTCP
+>>>pacote
+#podemos ver o encapsulamento
+#<IP contem ... |<TCP ...
+>>>pacote.show() #exibe os detalhes dessa variavel pacote
+#Para enviar o pacote que montamos na variavel pacote
+#contendo o IP com nosso PAYLOAD(Carga Util) TCP
+#Se tratando de apenas um pacote podemo usar o comando sr1 para mais sr.
+>>>sr1(pacote)
+#Detalhes a observar
+#IP src=ORIGEM dst=DESTINO | TCP flags=TIPO sport=ORIGEM dport=DESTINO
+#FLAGS (SA=SYN ACK = ABERTA)
+>>>pTCP.dport=6464
+>>>pacote = pIP/pTCP
+>>>sr1(pacote)
+#FLAG (RA=REST ACK = PORTA FECHADA)
+#Podemos pegar informacoes de forma separada
+#Jogando a resposta de pacote para uma variavel resposta
+>>>resposta = sr1(pacote)
+>>>resposta.show()
+>>>resposta.summary()
+>>>resposta #mostra a resposta do envio do "pacote"
+>>>resposta.show()
+>>>resposta.summary()
+#Agora podemos tambem pegar apenas o que nos interessa da resposta
+>>>resposta[IP].dst #Mostre apenas no protocolo IP o campo "ip de destino"
+>>>resposta[TCP].flags #O mesmo com TCP em flags
+#Se quisermos ver respostas, precisamos fazer sr()
+#Para isso vamos alterar a nossa pTCP mantendo a pIP como ta
+>>>pIP
+>>>pTCP
+>>>pTCP = TCP(dport=[80,443,8080]) #portas de destino
+>>>pTCP #vemos como ficou
+#vamos encapsula-lo novamente
+>>>pacote = pIP/pTCP
+>>>pacote
+#Eh extremamente importante verificar cada modificao para ter
+#Ter certeza de que tudo esta perfeitamente configurado
+#Se criar uma variavel ou modificala, veja como ela ta.
+
+#Observe que agora temos 3 portas de destino, entao nao podemos usar sr1
+#Para enviar e pegar todas as respostas vamos usar sr() para enviar nosso pacote
+#sr send&recv
+>>>sr(pacote)
+#Observe que recebemos 4 pacotes e 3 respostas TCP.
+#Podemos notar tambem que teve um campo para unswers, o que nao teve resposta
+#Entao eh sensato criarmos armazenar todas as saidas e filtrar
+#Futuramente o que queremos
+>>>resp, noresp = sr(pacote)
+#Desta forma ele nao exibe de imediato, pos armazenamos as diferentes saidas
+#Em suas consecutivas variaveis.
+resp.summary() #.show()
+noresp.summary()
+#Agora podemos ver a resposta de cada pacote individualmente
+>>>resp[0] #ver resposta do pacote 0
+>>>resp[1] #O mesmo do pacote 1
+>>>resp[3] #...
+>>>resp[0][1][TCP].show()
+>>>resp[0][1][TCP].sport
+>>>resp[0][1][TCP].dport
+>>>resp[0][1][TCP].flags
+>>>resp[0][1][TCP].load
+#pacote de envio e pacote de resposta [][pct envio=0 ou resposta=1][]
+>>>resp[0][1][TCP].flags #rest[send][recv][PROTO].campo
+#Criando icmp e payloads | analize com wireshark ou burp..
+>>>pIP
+>>>pacote = pIP/ICMP() #Aqui ele usa o padrao nao criamos variavel ICMP
+#Nota-se que ICMP() eh df do scapy, logo IP(),TCP(),ICMP() e a forma df como
+#Variaveis comuns dos protocolos no scapy
+>>>pacote.show()
+>>>resposta = sr1(pacote)
+#Colocar payload no pacote: Acompanhar no wireshark
+>>>resposta = sr #zeramos
+>>>pacote = pIP/ICMP()/"BLACKCYBER" #Encapsulando dados no ICMP
+>>>pacote.show()
+>>>resposta = sr1(pacote)
+>>>resposta
+#seu payload vai aparecer em data: como numeros nnnnnn... (hexadecimal)
+#No scapy eh o campo load
+#Colocar payload no pacote: Acompanhar no wireshark 
+>>>resposta = sr #zeramos 
+>>>pacote = pIP/pTCP()/"BLACKCYBER" #Encapsulando dados no TCP
+>>>pacote.show()
+>>>resposta = sr1(pacote)
+>>>resposta
+

@@ -1,0 +1,25 @@
+#scapy
+#montar pacotes, fazer encapsulamento, inserir payload em um protocolo...
+#Exibir todos os comandos do scapy
+>>>lsc()
+#HELP
+>>>help(comando)
+#Todos os PROTOCOLOS suportados
+>>>ls()
+#VER DETALHES DE UM PROTOCOLO (ESTRUTURA) IP...TCP..UDP...ICMP..
+>>>ls(IP)
+#
+>>>
+#
+>>>
+#
+>>>
+#
+>>>
+#
+>>>
+#
+>>>
+#
+>>>
+#
